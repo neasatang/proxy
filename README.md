@@ -5,4 +5,5 @@ The objective of the exercise is to implement a Web Proxy Server using Websocket
 - [ ] figure out how to block sites
 - [ ] "Efficiently cache requests locally and thus save bandwidth. You must gather timing and
 bandwidth data to prove the efficiency of your proxy."
-- [ ] try and cater for HTTPS requests
+- [ ] try and cater for HTTPS requests (80%)
+- [ ] fix my connect response - give a 200 response and something, im tired
