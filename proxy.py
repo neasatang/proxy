@@ -1,5 +1,7 @@
+# Libraries used:
 import socket, sys, signal, threading, select
 
+# Where the blocked sites are stored:
 blocked = ["tcd.blackboard.com", "youtube.com"]
 
 number = 0  # connection count
@@ -11,9 +13,13 @@ config = {
     "BUFFER_SIZE": 4092,  # max number of bytes that can be received at once for http
 }
 
-# Function to initialise sockets, ports etc.
+# Function: Initialise program
+# Description: Creates sockets and binds and listens to the server
+#              Listens to the clients, accepting the connection and creating a new socket object
+#              Generates multi-threads for the connections and keeps of track of how many threads are active
 def init():
     global number
+
     # Shutdown on Ctrl+C
     signal.signal(signal.SIGINT, signal_handler)
 
@@ -41,12 +47,16 @@ def init():
             print("Number of threads: "+  str(threading.active_count()))
             print("New connection. Total number of connections: " + str(number) + "\n")
 
-# signal handler
+# Function: Signal handler
+# Description: Checks for KeyInterruption Ctrl+C from user
 def signal_handler(signal, frame):
     print("Interruption.")
     sys.exit(0)
 
-# function to handle request from browser
+
+# Function: Handle requests to and from browser
+# Description: Deals with HTTP and HTTPS requests
+#              Checks for blocked URLS
 def proxy(conn, client_address):
     global number
     data = conn.recv(config["BUFFER_SIZE"])  # get type of request from browser
@@ -109,7 +119,7 @@ def proxy(conn, client_address):
                     # print(port_position)
                     # print(webserver_position)
 
-                    # setting up the ports and web-servers
+                    # ------ setting up the ports and web-servers ------#
                     if (port_position == -1 or webserver_position < port_position):
                         if (type == "https"):
                             port = 443
@@ -122,7 +132,7 @@ def proxy(conn, client_address):
 
                     print("Connect to: ", webserver, port,  "\n")
 
-                    # create socket to connect to the web server
+                    #--- create socket to connect to the web server ----#
                     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                     s.connect((webserver, port))
 
@@ -148,7 +158,7 @@ def proxy(conn, client_address):
                                 s.close()
                                 number = number - 1
 
-                    # ------------- HANDLING HTTP REQUESTS -------------#
+                    # ------------- HANDLING HTTP REQUESTS ------------ #
                     if type == "https":
                         conn.send(bytes("HTTP/1.1 200 Connection Established\r\n\r\n","utf8")) # send response to the browser
 
@@ -157,7 +167,7 @@ def proxy(conn, client_address):
 
                         while keep_connection:
                             keep_connection = False
-                            ready_sockets, sockets_for_writing, error_sockets = select.select(connections, [], connections, 3)
+                            ready_sockets, sockets_for_writing, error_sockets = select.select(connections, [], connections, 100)
 
                             if error_sockets:
                                 break
@@ -178,6 +188,8 @@ def proxy(conn, client_address):
 
                     else:
                         pass
+
+                    # ------------------------------------------------ #
 
             except IndexError:
                 pass
